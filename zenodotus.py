@@ -33,8 +33,7 @@ class Index:
 
     def insert(self, filename):
         shahash =  hashfile(filename)
-        self.files[filename] = shahash
-        self.hashes[shahash] = filename
+        self.insert_file_with_hash(shahash, filename)
 
     def insert_file_with_hash(self, shahash, filename):
         self.files[filename] = shahash
@@ -44,6 +43,7 @@ class Index:
         for filename, shahash in self.files.items():
             print(filename, shahash)
             print()
+
 
 def main():
     if len(sys.argv) < 2:
