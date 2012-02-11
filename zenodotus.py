@@ -2,6 +2,7 @@
 
 import hashlib
 import sys
+import os
 
 
 def hashfile(filename):
@@ -39,13 +40,28 @@ class Index:
         self.files[filename] = shahash
         self.hashes[shahash] = filename
 
+    def dump(self):
+        for filename, shahash in self.files.items():
+            print(filename, shahash)
+            print()
 
 def main():
+    if len(sys.argv) < 2:
+        print('Must supply an argument')
+        return
     if sys.argv[1] == 'insert':
         filename = sys.argv[2]
+        if filename[0] != '/':
+            filename = os.getcwd() + os.sep + filename
+        print('Inserting file:', filename)
         index = Index('index.zeno')
         index.insert(filename)
         index.writeindex()
+    elif sys.argv[1] == 'dump':
+        index = Index('index.zeno')
+        index.dump()
+    else:
+        print('Unknown option:', sys.argv[1])
 
 
 if __name__ == '__main__':
