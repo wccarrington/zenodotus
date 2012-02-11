@@ -12,21 +12,25 @@ def hashfile(filename):
     return sha.hexdigest()
 
 
+# An index is a directory, with a store file, and one or more tag files
+# the store file has lines of form "[sha256 hash] [file name]"
+# the tag file's name is the tag, and have a list of hashes that have that tag
 class Index:
-    def __init__(self, filename):
-        self.filename = filename
+    STORE_FILENAME = 'storefile'
+    def __init__(self, dirname):
+        self.dirname = dirname
         self.readindex()
 
     def readindex(self):
         self.files = {}
         self.hashes = {}
-        infile = open(self.filename)
+        infile = open(self.dirname + os.sep + self.STORE_FILENAME)
         for line in infile:
             shahash, filename = (l.strip() for l in line.split(None, 1))
             self.insert_file_with_hash(shahash, filename)
 
     def writeindex(self):
-        outfile = open(self.filename, 'w')
+        outfile = open(self.dirname + os.sep + self.STORE_FILENAME, 'w')
         for filename, shahash in self.files.items():
             outfile.write(shahash + ' ' + filename + '\n')
         outfile.close()
@@ -54,11 +58,11 @@ def main():
         if filename[0] != '/':
             filename = os.getcwd() + os.sep + filename
         print('Inserting file:', filename)
-        index = Index('index.zeno')
+        index = Index('zenoindex')
         index.insert(filename)
         index.writeindex()
     elif sys.argv[1] == 'dump':
-        index = Index('index.zeno')
+        index = Index('zenoindex')
         index.dump()
     else:
         print('Unknown option:', sys.argv[1])

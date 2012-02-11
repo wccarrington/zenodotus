@@ -1,4 +1,5 @@
 #! /bin/sh
 
-rm -f index.zeno
-touch index.zeno
+rm -rf zenoindex
+mkdir zenoindex
+touch zenoindex/storefile
