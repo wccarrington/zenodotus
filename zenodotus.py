@@ -24,10 +24,14 @@ class Index:
     def readindex(self):
         self.files = {}
         self.hashes = {}
+        self.tags = {}
         infile = open(self.dirname + os.sep + self.STORE_FILENAME)
         for line in infile:
             shahash, filename = (l.strip() for l in line.split(None, 1))
             self.insert_file_with_hash(shahash, filename)
+        for tagfile in os.listdir(self.dirname):
+            if tagfile != self.STORE_FILENAME:
+                self.tags[tagfile] = [l.strip() for l in open(os.path.join(self.dirname, tagfile)).readlines()]
 
     def writeindex(self):
         outfile = open(self.dirname + os.sep + self.STORE_FILENAME, 'w')
@@ -46,6 +50,9 @@ class Index:
     def dump(self):
         for filename, shahash in self.files.items():
             print(filename, shahash)
+            for tag, filehashes in self.tags.items():
+                if shahash in filehashes:
+                    print(tag)
             print()
 
 
@@ -56,7 +63,7 @@ def main():
     if sys.argv[1] == 'insert':
         filename = sys.argv[2]
         if filename[0] != '/':
-            filename = os.getcwd() + os.sep + filename
+            filename = os.path.abspath(filename)
         print('Inserting file:', filename)
         index = Index('zenoindex')
         index.insert(filename)
