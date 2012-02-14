@@ -34,10 +34,19 @@ class Index:
                 self.tags[tagfile] = [l.strip() for l in open(os.path.join(self.dirname, tagfile)).readlines()]
 
     def writeindex(self):
-        outfile = open(self.dirname + os.sep + self.STORE_FILENAME, 'w')
+        outfile = open(os.path.join(self.dirname, self.STORE_FILENAME), 'w')
         for filename, shahash in self.files.items():
             outfile.write(shahash + ' ' + filename + '\n')
         outfile.close()
+        for tag, hashes in self.tags.items():
+            if len(hashes) > 0:
+                outfile = open(os.path.join(self.dirname, tag), 'w')
+                for filehash in hashes:
+                    outfile.write(filehash + '\n')
+                outfile.close()
+            else:
+                os.remove(os.path.join(self.dirname, tag))
+        alltags = self.tags.keys()
 
     def insert(self, filename):
         shahash =  hashfile(filename)
@@ -55,6 +64,10 @@ class Index:
                     print(tag)
             print()
 
+    def dumptag(self, tag):
+        for filehash in self.tags[tag]:
+            print(self.hashes[filehash])
+
 
 def main():
     if len(sys.argv) < 2:
@@ -71,6 +84,10 @@ def main():
     elif sys.argv[1] == 'dump':
         index = Index('zenoindex')
         index.dump()
+    elif sys.argv[1] == 'dumptag':
+        tagname = sys.argv[2]
+        index = Index('zenoindex')
+        index.dumptag(tagname)
     else:
         print('Unknown option:', sys.argv[1])
 
