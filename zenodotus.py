@@ -68,6 +68,15 @@ class Index:
         for filehash in self.tags[tag]:
             print(self.hashes[filehash])
 
+    def maketag(self, tag):
+        if tag not in self.tags:
+            self.tags[tag] = []
+
+    def addtag(self, filename, tag):
+        if filename in self.files:
+            self.maketag(tag)
+            self.tags[tag].append(self.files[filename])
+
 
 def main():
     if len(sys.argv) < 2:
@@ -75,8 +84,7 @@ def main():
         return
     if sys.argv[1] == 'insert':
         filename = sys.argv[2]
-        if filename[0] != '/':
-            filename = os.path.abspath(filename)
+        filename = os.path.abspath(filename)
         print('Inserting file:', filename)
         index = Index('zenoindex')
         index.insert(filename)
@@ -88,6 +96,13 @@ def main():
         tagname = sys.argv[2]
         index = Index('zenoindex')
         index.dumptag(tagname)
+    elif sys.argv[1] == 'addtag':
+        filename = sys.argv[2]
+        filename = os.path.abspath(filename)
+        tagname = sys.argv[3]
+        index = Index('zenoindex')
+        index.addtag(filename, tagname)
+        index.writeindex()
     else:
         print('Unknown option:', sys.argv[1])
 
