@@ -3,6 +3,7 @@
 import hashlib
 import sys
 import os
+import time
 
 
 def hashfile(filename):
@@ -12,11 +13,16 @@ def hashfile(filename):
     return sha.hexdigest()
 
 
+def escape_string(string):
+    return '\\ '.join(string.split(' '))
+
+
 # An index is a directory, with a store file, and one or more tag files
 # the store file has lines of form "[sha256 hash] [file name]"
 # the tag file's name is the tag, and have a list of hashes that have that tag
 class Index:
     STORE_FILENAME = 'storefile'
+    HISTORY_FILENAME = 'history'
     def __init__(self, dirname):
         self.dirname = dirname
         self.readindex()
@@ -25,6 +31,7 @@ class Index:
         self.files = {}
         self.hashes = {}
         self.tags = {}
+        self.history = []
         infile = open(self.dirname + os.sep + self.STORE_FILENAME)
         for line in infile:
             shahash, filename = (l.strip() for l in line.split(None, 1))
@@ -46,11 +53,14 @@ class Index:
                 outfile.close()
             else:
                 os.remove(os.path.join(self.dirname, tag))
-        alltags = self.tags.keys()
+        outfile = open(os.path.join(self.dirname, self.HISTORY_FILENAME), 'a')
+        for line in self.history:
+            outfile.write(line + '\n')
 
     def insert(self, filename):
-        shahash =  hashfile(filename)
+        shahash = hashfile(filename)
         self.insert_file_with_hash(shahash, filename)
+        self.history.append('INSERT %i %s %s' % (time.time(), shahash, escape_string(filename)))
 
     def insert_file_with_hash(self, shahash, filename):
         self.files[filename] = shahash
@@ -76,6 +86,7 @@ class Index:
         if filename in self.files:
             self.maketag(tag)
             self.tags[tag].append(self.files[filename])
+            self.history.append('ADDTAG %i %s %s' % (time.time(), escape_string(tag), escape_string(filename)))
 
 
 def main():
