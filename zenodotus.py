@@ -23,6 +23,7 @@ def escape_string(string):
 class Index:
     STORE_FILENAME = 'storefile'
     HISTORY_FILENAME = 'history'
+
     def __init__(self, dirname):
         self.dirname = dirname
         self.readindex()
@@ -37,8 +38,9 @@ class Index:
             shahash, filename = (l.strip() for l in line.split(None, 1))
             self.insert_file_with_hash(shahash, filename)
         for tagfile in os.listdir(self.dirname):
-            if tagfile != self.STORE_FILENAME:
-                self.tags[tagfile] = [l.strip() for l in open(os.path.join(self.dirname, tagfile)).readlines()]
+            if tagfile != self.STORE_FILENAME and tagfile != self.HISTORY_FILENAME:
+                # some care is required here. the empty string is a valid value, so split before you strip.
+                self.tags[tagfile] = {f1.strip(): f2.strip() for f1, f2 in [l.split(' ', 1) for l in open(os.path.join(self.dirname, tagfile)).readlines()]}
 
     def writeindex(self):
         outfile = open(os.path.join(self.dirname, self.STORE_FILENAME), 'w')
@@ -48,8 +50,8 @@ class Index:
         for tag, hashes in self.tags.items():
             if len(hashes) > 0:
                 outfile = open(os.path.join(self.dirname, tag), 'w')
-                for filehash in hashes:
-                    outfile.write(filehash + '\n')
+                for filehash, value in hashes.items():
+                    outfile.write(filehash + ' ' + value + '\n')
                 outfile.close()
             else:
                 os.remove(os.path.join(self.dirname, tag))
@@ -71,22 +73,27 @@ class Index:
             print(filename, shahash)
             for tag, filehashes in self.tags.items():
                 if shahash in filehashes:
-                    print(tag)
+                    if filehashes[shahash] != '':
+                        print(tag + ':', filehashes[shahash])
+                    else:
+                        print(tag)
             print()
 
     def dumptag(self, tag):
-        for filehash in self.tags[tag]:
-            print(self.hashes[filehash])
+        for filehash, value in self.tags[tag].items():
+            print(self.hashes[filehash], value)
 
     def maketag(self, tag):
         if tag not in self.tags:
-            self.tags[tag] = []
+            self.tags[tag] = {}
 
-    def addtag(self, filename, tag):
+    def addtag(self, filename, tag, value):
         if filename in self.files:
             self.maketag(tag)
-            self.tags[tag].append(self.files[filename])
-            self.history.append('ADDTAG %i %s %s' % (time.time(), escape_string(tag), escape_string(filename)))
+            self.tags[tag][self.files[filename]] = value
+            self.history.append('ADDTAG %i %s %s %s' % (time.time(), escape_string(tag), escape_string(value), escape_string(filename)))
+        else:
+            print(filename, 'is not archived.')
 
 
 def main():
@@ -111,8 +118,12 @@ def main():
         filename = sys.argv[2]
         filename = os.path.abspath(filename)
         tagname = sys.argv[3]
+        if len(sys.argv) > 4:
+            value = sys.argv[4]
+        else:
+            value = ''
         index = Index('zenoindex')
-        index.addtag(filename, tagname)
+        index.addtag(filename, tagname, value)
         index.writeindex()
     else:
         print('Unknown option:', sys.argv[1])
