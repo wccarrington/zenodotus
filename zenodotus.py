@@ -16,7 +16,9 @@ def hashfile(filename):
 def escape_string(string):
     return '\\ '.join(string.split(' '))
 
-#INDEX_LOCATION = '~/.zenodotus' #This line is for release mode
+
+
+#INDEX_LOCATION = os.path.expanduser('~/.zenodotus') #This line is for release mode
 INDEX_LOCATION = './zenoindex' #This line is for development work
 
 # An index is a directory, with a store file, and one or more tag files
