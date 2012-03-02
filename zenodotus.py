@@ -16,6 +16,8 @@ def hashfile(filename):
 def escape_string(string):
     return '\\ '.join(string.split(' '))
 
+#INDEX_LOCATION = '~/.zenodotus' #This line is for release mode
+INDEX_LOCATION = './zenoindex' #This line is for development work
 
 # An index is a directory, with a store file, and one or more tag files
 # the store file has lines of form "[sha256 hash] [file name]"
@@ -104,15 +106,15 @@ def main():
         filename = sys.argv[2]
         filename = os.path.abspath(filename)
         print('Inserting file:', filename)
-        index = Index('zenoindex')
+        index = Index(INDEX_LOCATION)
         index.insert(filename)
         index.writeindex()
     elif sys.argv[1] == 'dump':
-        index = Index('zenoindex')
+        index = Index(INDEX_LOCATION)
         index.dump()
     elif sys.argv[1] == 'dumptag':
         tagname = sys.argv[2]
-        index = Index('zenoindex')
+        index = Index(INDEX_LOCATION)
         index.dumptag(tagname)
     elif sys.argv[1] == 'addtag':
         filename = sys.argv[2]
@@ -122,7 +124,7 @@ def main():
             value = sys.argv[4]
         else:
             value = ''
-        index = Index('zenoindex')
+        index = Index(INDEX_LOCATION)
         index.addtag(filename, tagname, value)
         index.writeindex()
     else:
