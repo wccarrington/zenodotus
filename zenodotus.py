@@ -4,6 +4,7 @@ import hashlib
 import sys
 import os
 import time
+import cmd
 
 READSIZE = 1024
 
@@ -108,6 +109,15 @@ class Index:
             yield f
 
 
+class IndexCommands(cmd.Cmd):
+    def __init__(self):
+        cmd.Cmd.__init__(self)
+    def do_quit(self, args):
+        return True
+    def postcmd(self, stop, line):
+        return stop
+
+
 def main():
     if len(sys.argv) < 2:
         print('Must supply an argument')
@@ -138,6 +148,9 @@ def main():
         index = Index(INDEX_LOCATION)
         index.addtag(filename, tagname, value)
         index.writeindex()
+    elif sys.argv[1] == 'cmd':
+        cmd = IndexCommands()
+        cmd.cmdloop()
     else:
         print('Unknown option:', sys.argv[1])
 
