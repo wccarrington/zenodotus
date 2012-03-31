@@ -5,11 +5,15 @@ import sys
 import os
 import time
 
+READSIZE = 1024
 
 def hashfile(filename):
     f = open(filename, 'rb')
     sha = hashlib.new('sha256')
-    sha.update(f.read())
+    data = f.read(READSIZE)
+    while len(data) > 0:
+        sha.update(data)
+        data = f.read(READSIZE)
     return sha.hexdigest()
 
 
@@ -99,6 +103,10 @@ class Index:
         else:
             print(filename, 'is not archived.')
 
+    def indexedfiles(self):
+        for f in self.files:
+            yield f
+
 
 def main():
     if len(sys.argv) < 2:
@@ -110,6 +118,7 @@ def main():
         print('Inserting file:', filename)
         index = Index(INDEX_LOCATION)
         index.insert(filename)
+        index.addtag(filename, 'TAGME', '')
         index.writeindex()
     elif sys.argv[1] == 'dump':
         index = Index(INDEX_LOCATION)
@@ -128,6 +137,12 @@ def main():
             value = ''
         index = Index(INDEX_LOCATION)
         index.addtag(filename, tagname, value)
+        index.writeindex()
+    elif sys.argv[1] == 'fixtags':
+        #temporary code to add 'TAGME' tags to everything
+        index = Index(INDEX_LOCATION)
+        for filename in index.indexedfiles():
+            index.addtag(filename, 'TAGME', '')
         index.writeindex()
     else:
         print('Unknown option:', sys.argv[1])
