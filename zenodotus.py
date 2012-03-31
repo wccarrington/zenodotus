@@ -138,12 +138,6 @@ def main():
         index = Index(INDEX_LOCATION)
         index.addtag(filename, tagname, value)
         index.writeindex()
-    elif sys.argv[1] == 'fixtags':
-        #temporary code to add 'TAGME' tags to everything
-        index = Index(INDEX_LOCATION)
-        for filename in index.indexedfiles():
-            index.addtag(filename, 'TAGME', '')
-        index.writeindex()
     else:
         print('Unknown option:', sys.argv[1])
 
